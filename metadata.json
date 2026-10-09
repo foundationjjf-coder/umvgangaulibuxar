@@ -1,0 +1,6 @@
+{
+  "name": "Gangauli Vidyalaya",
+  "description": "Official digital campus and web portal for Uchch Madhyamik Vidyalaya Gangauli, Simri, Buxar, Bihar with online admissions, results, smart classes, and scholarship tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

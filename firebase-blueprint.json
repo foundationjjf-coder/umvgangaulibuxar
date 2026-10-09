@@ -1,0 +1,322 @@
+{
+  "entities": {
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Registered administrator record for Uchch Madhyamik Vidyalaya Gangauli.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator."
+        },
+        "email": {
+          "type": "string",
+          "description": "Verified email address of the administrator."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when admin access was registered."
+        }
+      },
+      "required": ["userId", "email", "createdAt"]
+    },
+    "GalleryPhoto": {
+      "title": "GalleryPhoto",
+      "description": "School photo gallery item categorized by occasion or theme name.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique document ID of the photo."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner/Admin UID who uploaded the gallery item."
+        },
+        "occasionTheme": {
+          "type": "string",
+          "description": "Occasion or event theme name (e.g., Saraswati Puja, Republic Day, Sports Meet)."
+        },
+        "title": {
+          "type": "string",
+          "description": "Photo caption or headline."
+        },
+        "imageSource": {
+          "type": "string",
+          "description": "Preset key or local/URI image reference."
+        },
+        "dateLabel": {
+          "type": "string",
+          "description": "Display date of the occasion."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["id", "userId", "occasionTheme", "title", "imageSource", "dateLabel", "createdAt", "updatedAt"]
+    },
+    "AdmissionRecord": {
+      "title": "AdmissionRecord",
+      "description": "Student online admission application managed by the school admin.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique document ID / Application Token ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user/admin managing the application."
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Full name of the applicant student."
+        },
+        "fatherName": {
+          "type": "string",
+          "description": "Father or guardian name."
+        },
+        "classApplied": {
+          "type": "string",
+          "description": "Target class (e.g. Class 9, Class 11)."
+        },
+        "streamApplied": {
+          "type": "string",
+          "description": "Academic stream (Science, Arts, Commerce, Matric)."
+        },
+        "prevPercentage": {
+          "type": "string",
+          "description": "Previous qualifying exam percentage."
+        },
+        "mobileNumber": {
+          "type": "string",
+          "description": "10-digit contact mobile number."
+        },
+        "village": {
+          "type": "string",
+          "description": "Village or panchayat in Simri Block, Buxar."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "ACCEPTED", "CANCELLED"],
+          "description": "Admission review status controlled by Admin."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["id", "userId", "studentName", "fatherName", "classApplied", "streamApplied", "prevPercentage", "mobileNumber", "village", "status", "createdAt", "updatedAt"]
+    },
+    "SchoolAccountConfig": {
+      "title": "SchoolAccountConfig",
+      "description": "Official school bank account details and UPI Payment QR code configuration.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Configuration document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Admin UID owning this configuration."
+        },
+        "accountHolderName": {
+          "type": "string",
+          "description": "Official school bank account title."
+        },
+        "bankName": {
+          "type": "string",
+          "description": "Bank and branch name."
+        },
+        "accountNumber": {
+          "type": "string",
+          "description": "Bank account number."
+        },
+        "ifscCode": {
+          "type": "string",
+          "description": "Bank branch IFSC code."
+        },
+        "upiId": {
+          "type": "string",
+          "description": "Official UPI VPA ID used for QR generation."
+        },
+        "qrCodeTitle": {
+          "type": "string",
+          "description": "Label or instructions displayed on the Payment QR card."
+        },
+        "qrCustomImageUri": {
+          "type": "string",
+          "description": "Optional picked image URI or preset key for custom QR code image."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["id", "userId", "accountHolderName", "bankName", "accountNumber", "ifscCode", "upiId", "qrCodeTitle", "qrCustomImageUri", "createdAt", "updatedAt"]
+    },
+    "ClassResultRecord": {
+      "title": "ClassResultRecord",
+      "description": "Class-wise student examination result record with live publication toggle.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique result document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Admin UID who published the result."
+        },
+        "rollNo": {
+          "type": "string",
+          "description": "Student roll number."
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Student full name."
+        },
+        "fatherName": {
+          "type": "string",
+          "description": "Father name."
+        },
+        "className": {
+          "type": "string",
+          "description": "Class and stream (e.g., Class 10, Class 12 Science, Class 12 Arts)."
+        },
+        "totalMarks": {
+          "type": "integer",
+          "description": "Total marks obtained out of 500."
+        },
+        "maxMarks": {
+          "type": "integer",
+          "description": "Maximum marks (typically 500)."
+        },
+        "division": {
+          "type": "string",
+          "description": "Result division (1st Division, 2nd Division, etc.)."
+        },
+        "subjectBreakdown": {
+          "type": "string",
+          "description": "Formatted subject-wise marks breakdown."
+        },
+        "isLive": {
+          "type": "boolean",
+          "description": "Whether this class/student result is currently published live."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["id", "userId", "rollNo", "studentName", "fatherName", "className", "totalMarks", "maxMarks", "division", "subjectBreakdown", "isLive", "createdAt", "updatedAt"]
+    },
+    "TeacherRecord": {
+      "title": "TeacherRecord",
+      "description": "Registered teacher profile in Uchch Madhyamik Vidyalaya Gangauli.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique teacher document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Admin UID who registered the teacher."
+        },
+        "name": {
+          "type": "string",
+          "description": "Teacher full name."
+        },
+        "designation": {
+          "type": "string",
+          "description": "Official designation (e.g., PGT Lecturer, TGT Teacher)."
+        },
+        "department": {
+          "type": "string",
+          "description": "Department (Science, Arts, Commerce, Secondary, Languages, Sports)."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Primary teaching subject."
+        },
+        "qualification": {
+          "type": "string",
+          "description": "Academic and professional qualifications (e.g., M.Sc., B.Ed., BPSC)."
+        },
+        "experience": {
+          "type": "string",
+          "description": "Years of teaching experience."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Official contact or extension."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["id", "userId", "name", "designation", "department", "subject", "qualification", "experience", "phone", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Trusted administrator lookup table."
+    },
+    "/gallery_photos/{photoId}": {
+      "schema": { "$ref": "#/entities/GalleryPhoto" },
+      "description": "School occasion and theme photo gallery items."
+    },
+    "/admissions/{admissionId}": {
+      "schema": { "$ref": "#/entities/AdmissionRecord" },
+      "description": "Student admission applications with Accept/Cancel workflow."
+    },
+    "/school_config/{configId}": {
+      "schema": { "$ref": "#/entities/SchoolAccountConfig" },
+      "description": "School bank account and Payment QR configuration."
+    },
+    "/live_results/{resultId}": {
+      "schema": { "$ref": "#/entities/ClassResultRecord" },
+      "description": "Class-wise student exam results with live publication status."
+    },
+    "/teachers/{teacherId}": {
+      "schema": { "$ref": "#/entities/TeacherRecord" },
+      "description": "Registered faculty directory records."
+    }
+  }
+}

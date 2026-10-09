@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Gangauli Vidyalaya</string>
+    <string name="school_hindi_name">उच्च माध्यमिक विद्यालय गंगौली</string>
+    <string name="school_english_name">Uchch Madhyamik Vidyalaya Gangauli</string>
+    <string name="school_location_hi">ग्राम एवं पोस्ट - गंगौली, प्रखंड - सिमरी, जिला - बक्सर (बिहार) - 802131</string>
+    <string name="school_location_en">Vill &amp; P.O. Gangauli, Block Simri, Dist. Buxar, Bihar - 802131</string>
+    <string name="school_affiliation_badge">UDISE+: 10300604502 • BSEB Patna Code: 73045</string>
+    <string name="school_motto_sanskrit">सा विद्या या विमुक्तये • तमसो मा ज्योतिर्गमय</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_academics">Academics</string>
+    <string name="nav_admissions">Admissions</string>
+    <string name="nav_results">Student Hub</string>
+    <string name="nav_notices">Notices &amp; Info</string>
+    <string name="cd_school_crest">Uchch Madhyamik Vidyalaya Gangauli Official Crest</string>
+    <string name="cd_campus_hero">Uchch Madhyamik Vidyalaya Gangauli Campus View</string>
+    <string name="cd_language_switch">Switch between Hindi and English language</string>
+    <string name="cd_theme_switch">Toggle Dark and Light theme</string>
+</resources>

@@ -1,0 +1,257 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Security Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        ('email' in request.auth.token && 'email_verified' in request.auth.token && request.auth.token.email == 'foundationjjf@gmail.com' && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    // 1. AdminUser Validation Blueprint
+    function isValidAdminUser(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+             isValidTimestamp(data.createdAt);
+    }
+
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(adminId) &&
+                       request.auth.uid == adminId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'email', 'createdAt']) &&
+                       incoming().keys().hasOnly(['userId', 'email', 'createdAt']) &&
+                       isValidAdminUser(incoming());
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(adminId) && request.auth.uid == adminId;
+    }
+
+    // 2. GalleryPhoto Validation Blueprint
+    function isValidGalleryPhoto(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.occasionTheme is string && data.occasionTheme.size() >= 1 && data.occasionTheme.size() <= 160 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.imageSource is string && data.imageSource.size() >= 1 && data.imageSource.size() <= 2000 &&
+             data.dateLabel is string && data.dateLabel.size() >= 1 && data.dateLabel.size() <= 80 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /gallery_photos/{photoId} {
+      allow get: if isSignedIn() && isValidId(photoId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(photoId) &&
+                       incoming().id == photoId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['id', 'userId', 'occasionTheme', 'title', 'imageSource', 'dateLabel', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['id', 'userId', 'occasionTheme', 'title', 'imageSource', 'dateLabel', 'createdAt', 'updatedAt']) &&
+                       isValidGalleryPhoto(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(photoId) &&
+                       isValidGalleryPhoto(incoming()) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().id == existing().id &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['occasionTheme', 'title', 'imageSource', 'dateLabel', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(photoId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // 3. AdmissionRecord Validation Blueprint
+    function isValidAdmissionRecord(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 150 &&
+             data.fatherName is string && data.fatherName.size() >= 1 && data.fatherName.size() <= 150 &&
+             data.classApplied is string && data.classApplied.size() >= 1 && data.classApplied.size() <= 100 &&
+             data.streamApplied is string && data.streamApplied.size() >= 1 && data.streamApplied.size() <= 100 &&
+             data.prevPercentage is string && data.prevPercentage.size() >= 1 && data.prevPercentage.size() <= 30 &&
+             data.mobileNumber is string && data.mobileNumber.size() >= 6 && data.mobileNumber.size() <= 20 &&
+             data.village is string && data.village.size() >= 1 && data.village.size() <= 120 &&
+             data.status is string && (data.status == 'PENDING' || data.status == 'ACCEPTED' || data.status == 'CANCELLED') &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /admissions/{admissionId} {
+      allow get: if isSignedIn() && isValidId(admissionId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(admissionId) &&
+                       incoming().id == admissionId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['id', 'userId', 'studentName', 'fatherName', 'classApplied', 'streamApplied', 'prevPercentage', 'mobileNumber', 'village', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['id', 'userId', 'studentName', 'fatherName', 'classApplied', 'streamApplied', 'prevPercentage', 'mobileNumber', 'village', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidAdmissionRecord(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(admissionId) &&
+                       isValidAdmissionRecord(incoming()) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().id == existing().id &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'studentName', 'fatherName', 'classApplied', 'streamApplied', 'prevPercentage', 'mobileNumber', 'village', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(admissionId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // 4. SchoolAccountConfig Validation Blueprint
+    function isValidSchoolAccountConfig(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.accountHolderName is string && data.accountHolderName.size() >= 1 && data.accountHolderName.size() <= 160 &&
+             data.bankName is string && data.bankName.size() >= 1 && data.bankName.size() <= 160 &&
+             data.accountNumber is string && data.accountNumber.size() >= 4 && data.accountNumber.size() <= 40 &&
+             data.ifscCode is string && data.ifscCode.size() >= 4 && data.ifscCode.size() <= 30 &&
+             data.upiId is string && data.upiId.size() >= 3 && data.upiId.size() <= 120 &&
+             data.qrCodeTitle is string && data.qrCodeTitle.size() >= 1 && data.qrCodeTitle.size() <= 160 &&
+             data.qrCustomImageUri is string && data.qrCustomImageUri.size() <= 2000 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /school_config/{configId} {
+      allow get: if isSignedIn() && isValidId(configId) && (resource == null || existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(configId) &&
+                       incoming().id == configId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['id', 'userId', 'accountHolderName', 'bankName', 'accountNumber', 'ifscCode', 'upiId', 'qrCodeTitle', 'qrCustomImageUri', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['id', 'userId', 'accountHolderName', 'bankName', 'accountNumber', 'ifscCode', 'upiId', 'qrCodeTitle', 'qrCustomImageUri', 'createdAt', 'updatedAt']) &&
+                       isValidSchoolAccountConfig(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(configId) &&
+                       isValidSchoolAccountConfig(incoming()) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().id == existing().id &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['accountHolderName', 'bankName', 'accountNumber', 'ifscCode', 'upiId', 'qrCodeTitle', 'qrCustomImageUri', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(configId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // 5. ClassResultRecord Validation Blueprint
+    function isValidClassResultRecord(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.rollNo is string && data.rollNo.size() >= 1 && data.rollNo.size() <= 40 &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 150 &&
+             data.fatherName is string && data.fatherName.size() >= 1 && data.fatherName.size() <= 150 &&
+             data.className is string && data.className.size() >= 1 && data.className.size() <= 80 &&
+             data.totalMarks is int && data.totalMarks >= 0 && data.totalMarks <= 1000 &&
+             data.maxMarks is int && data.maxMarks >= 100 && data.maxMarks <= 1000 &&
+             data.division is string && data.division.size() >= 1 && data.division.size() <= 80 &&
+             data.subjectBreakdown is string && data.subjectBreakdown.size() >= 1 && data.subjectBreakdown.size() <= 600 &&
+             data.isLive is bool &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /live_results/{resultId} {
+      allow get: if isSignedIn() && isValidId(resultId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(resultId) &&
+                       incoming().id == resultId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['id', 'userId', 'rollNo', 'studentName', 'fatherName', 'className', 'totalMarks', 'maxMarks', 'division', 'subjectBreakdown', 'isLive', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['id', 'userId', 'rollNo', 'studentName', 'fatherName', 'className', 'totalMarks', 'maxMarks', 'division', 'subjectBreakdown', 'isLive', 'createdAt', 'updatedAt']) &&
+                       isValidClassResultRecord(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(resultId) &&
+                       isValidClassResultRecord(incoming()) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().id == existing().id &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['rollNo', 'studentName', 'fatherName', 'className', 'totalMarks', 'maxMarks', 'division', 'subjectBreakdown', 'isLive', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(resultId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // 6. TeacherRecord Validation Blueprint
+    function isValidTeacherRecord(data) {
+      return data.id is string && data.id.size() >= 1 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 150 &&
+             data.designation is string && data.designation.size() >= 1 && data.designation.size() <= 120 &&
+             data.department is string && data.department.size() >= 1 && data.department.size() <= 80 &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 120 &&
+             data.qualification is string && data.qualification.size() >= 1 && data.qualification.size() <= 160 &&
+             data.experience is string && data.experience.size() >= 1 && data.experience.size() <= 80 &&
+             data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 40 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /teachers/{teacherId} {
+      allow get: if isSignedIn() && isValidId(teacherId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(teacherId) &&
+                       incoming().id == teacherId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['id', 'userId', 'name', 'designation', 'department', 'subject', 'qualification', 'experience', 'phone', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['id', 'userId', 'name', 'designation', 'department', 'subject', 'qualification', 'experience', 'phone', 'createdAt', 'updatedAt']) &&
+                       isValidTeacherRecord(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(teacherId) &&
+                       isValidTeacherRecord(incoming()) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().id == existing().id &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'designation', 'department', 'subject', 'qualification', 'experience', 'phone', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(teacherId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+  }
+}
